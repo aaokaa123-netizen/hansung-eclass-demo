@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>한성대학교 e-class | 과제 관리</title>
+  <link
+    rel="icon"
+    type="image/svg+xml"
+    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23003876'/%3E%3Ctext x='32' y='43' text-anchor='middle' font-family='sans-serif' font-size='30' font-weight='700' fill='white'%3EH%3C/text%3E%3C/svg%3E"
+  />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- 상단 글로벌 헤더 -->
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand-area">
+        <a href="#assignments" class="brand-link" data-nav="assignments">
+          <span class="brand-emblem" aria-hidden="true">H</span>
+          <div class="brand-text">
+            <span class="brand-univ">한성대학교</span>
+            <span class="brand-name">e-class</span>
+          </div>
+        </a>
+        <nav class="global-nav" aria-label="주 메뉴">
+          <button type="button" class="nav-tab is-active" data-view="assignments" data-testid="nav-assignments">과제 관리</button>
+          <button type="button" class="nav-tab" data-view="courses" data-testid="nav-courses">나의 강좌</button>
+          <button type="button" class="nav-tab" data-view="notices" data-testid="nav-notices">공지사항</button>
+        </nav>
+      </div>
+
+      <div class="user-area">
+        <span class="semester-pill">2026학년도 2학기</span>
+        <div class="user-profile" aria-label="로그인 사용자 정보">
+          <span class="user-avatar" aria-hidden="true">홍</span>
+          <div class="user-meta">
+            <strong class="user-name">홍길동</strong>
+            <span class="user-id">컴퓨터공학부 · 20261234</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- 메인 레이아웃 -->
+  <div class="layout">
+    <!-- 좌측 사이드바 -->
+    <aside class="sidebar" aria-label="강좌 및 메뉴 탐색">
+      <section class="sidebar-card">
+        <div class="sidebar-card-header">
+          <h2>나의 강좌</h2>
+          <span class="badge-count" id="course-count">4</span>
+        </div>
+        <ul class="course-list" id="sidebar-course-list">
+          <!-- JS로 렌더링 -->
+        </ul>
+      </section>
+
+      <section class="sidebar-card">
+        <div class="sidebar-card-header">
+          <h2>학습 일정 요약</h2>
+        </div>
+        <div class="mini-calendar">
+          <div class="mini-cal-row">
+            <span class="dot dot-warn"></span>
+            <div>
+              <strong>웹프로그래밍 11주차 과제</strong>
+              <span>2026-11-30 23:59 마감</span>
+            </div>
+          </div>
+          <div class="mini-cal-row">
+            <span class="dot dot-warn"></span>
+            <div>
+              <strong>컴퓨터네트워크 11주차 과제</strong>
+              <span>2026-12-01 23:59 마감</span>
+            </div>
+          </div>
+          <div class="mini-cal-row">
+            <span class="dot dot-info"></span>
+            <div>
+              <strong>소프트웨어공학 12주차 과제</strong>
+              <span>2026-12-03 23:59 마감</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </aside>
+
+    <!-- 우측 본문 -->
+    <main class="main-content">
+      <!-- 브레드크럼 & 액션 바 -->
+      <div class="page-header">
+        <div>
+          <nav class="breadcrumb" aria-label="현재 위치">
+            <span>홈</span>
+            <span class="sep">/</span>
+            <span id="breadcrumb-course">전체 강좌</span>
+            <span class="sep">/</span>
+            <strong id="breadcrumb-page">과제 관리</strong>
+          </nav>
+          <h1 class="page-title" id="page-title">과제 목록 및 등록</h1>
+        </div>
+        <div class="page-actions">
+          <button type="button" class="btn btn-primary" id="scroll-to-register-btn" data-testid="open-register-btn">
+            + 새 과제 등록
+          </button>
+        </div>
+      </div>
+
+      <!-- 뷰 1: 과제 관리 (기본 화면) -->
+      <div id="view-assignments" class="view-panel">
+        <!-- 요약 통계 카드 -->
+        <section class="stats-grid" aria-label="과제 현황 요약">
+          <article class="stat-card">
+            <span class="stat-label">전체 과제</span>
+            <strong class="stat-value" id="stat-total" data-testid="stat-total">0</strong>
+            <span class="stat-sub">선택된 강좌 기준</span>
+          </article>
+          <article class="stat-card stat-done">
+            <span class="stat-label">제출 완료</span>
+            <strong class="stat-value" id="stat-submitted" data-testid="stat-submitted">0</strong>
+            <span class="stat-sub">정상 등록된 과제</span>
+          </article>
+          <article class="stat-card stat-pending">
+            <span class="stat-label">미제출 과제</span>
+            <strong class="stat-value" id="stat-pending" data-testid="stat-pending">0</strong>
+            <span class="stat-sub">마감 전 제출 필요</span>
+          </article>
+        </section>
+
+        <!-- 과제 등록(제출) 카드 -->
+        <section class="panel register-panel" id="register-section" aria-labelledby="register-heading">
+          <div class="panel-header">
+            <div>
+              <h2 id="register-heading">과제 등록</h2>
+              <p class="panel-desc">강좌를 선택하고 과제 제목, 내용 및 첨부파일을 입력한 뒤 <strong>과제 등록</strong> 버튼을 눌러 제출하세요.</p>
+            </div>
+            <span class="course-chip" id="selected-course-badge">웹프로그래밍 (CSE301-A)</span>
+          </div>
+
+          <form id="assignment-form" class="assignment-form" data-testid="assignment-register-form" novalidate>
+            <div class="form-row form-row-3">
+              <div class="form-group">
+                <label for="course-select">강좌 선택 <span class="req">*</span></label>
+                <select id="course-select" name="courseId" data-testid="course-select" required>
+                  <!-- JS로 렌더링 -->
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="assignment-week">주차</label>
+                <select id="assignment-week" name="week" data-testid="assignment-week">
+                  <option value="11주차">11주차</option>
+                  <option value="12주차" selected>12주차</option>
+                  <option value="13주차">13주차</option>
+                  <option value="14주차">14주차</option>
+                  <option value="기말과제">기말과제</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="due-date">제출 마감일시</label>
+                <input
+                  type="datetime-local"
+                  id="due-date"
+                  name="dueDate"
+                  data-testid="due-date"
+                  value="2026-12-05T23:59"
+                />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="assignment-title">과제 제목 <span class="req">*</span></label>
+              <input
+                type="text"
+                id="assignment-title"
+                name="title"
+                data-testid="assignment-title"
+                placeholder="예: 12주차 웹 자동화 테스트 실습 과제 제출"
+                autocomplete="off"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="assignment-content">온라인 텍스트 / 과제 내용 <span class="req">*</span></label>
+              <textarea
+                id="assignment-content"
+                name="description"
+                data-testid="assignment-content"
+                rows="4"
+                placeholder="과제 설명, 실행 방법 또는 제출할 텍스트 내용을 입력하세요."
+                required
+              ></textarea>
+            </div>
+
+            <div class="form-group">
+              <label for="assignment-file">파일 첨부 (선택)</label>
+              <div class="dropzone" id="file-dropzone" data-testid="file-dropzone">
+                <input type="file" id="assignment-file" name="file" data-testid="assignment-file" class="file-input" />
+                <div class="dropzone-content">
+                  <span class="dropzone-icon" aria-hidden="true">⬆</span>
+                  <p class="dropzone-title">여기에 과제 파일을 끌어다 놓거나 클릭하여 선택하세요</p>
+                  <p class="dropzone-sub" id="selected-file-label">지원 형식: PDF, HWP, DOCX, ZIP, TXT (최대 50MB)</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- 오류 / 상태 메시지 영역 -->
+            <div
+              id="assignment-error-alert"
+              class="alert alert-error"
+              role="alert"
+              aria-live="assertive"
+              data-testid="assignment-error-alert"
+              hidden
+            ></div>
+
+            <div
+              id="assignment-success-alert"
+              class="alert alert-success"
+              role="status"
+              aria-live="polite"
+              data-testid="assignment-success-alert"
+              hidden
+            ></div>
+
+            <div class="form-actions">
+              <button type="button" class="btn btn-secondary" id="reset-form-btn" data-testid="reset-form-btn">
+                입력 초기화
+              </button>
+              <button type="submit" class="btn btn-primary" id="submit-assignment-btn" data-testid="submit-assignment-btn">
+                과제 등록
+              </button>
+            </div>
+          </form>
+        </section>
+
+        <!-- 과제 목록 테이블 카드 -->
+        <section class="panel" aria-labelledby="list-heading">
+          <div class="panel-header panel-header-wrap">
+            <div>
+              <h2 id="list-heading">등록된 과제 목록</h2>
+              <p class="panel-desc">과제명을 클릭하면 상세 요구사항과 제출 상태를 확인할 수 있습니다.</p>
+            </div>
+            <div class="filter-bar">
+              <select id="status-filter" aria-label="제출 상태 필터" data-testid="status-filter">
+                <option value="ALL">전체 상태</option>
+                <option value="미제출">미제출만 보기</option>
+                <option value="제출 완료">제출 완료만 보기</option>
+              </select>
+              <input
+                type="search"
+                id="assignment-search"
+                placeholder="과제 제목 또는 과목 검색..."
+                aria-label="과제 검색"
+                data-testid="assignment-search"
+              />
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table class="data-table" id="assignment-table" data-testid="assignment-table">
+              <thead>
+                <tr>
+                  <th style="width: 110px;">주차</th>
+                  <th style="width: 150px;">강좌명</th>
+                  <th>과제 제목</th>
+                  <th style="width: 155px;">마감일시</th>
+                  <th style="width: 110px;">제출 상태</th>
+                  <th style="width: 120px;">작업</th>
+                </tr>
+              </thead>
+              <tbody id="assignment-tbody">
+                <!-- JS로 렌더링 -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+
+      <!-- 뷰 2: 나의 강좌 -->
+      <div id="view-courses" class="view-panel" hidden>
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <h2>2026학년도 2학기 수강 강좌</h2>
+              <p class="panel-desc">강좌 카드를 클릭하면 해당 강좌의 과제 목록으로 바로 이동합니다.</p>
+            </div>
+          </div>
+          <div class="course-cards-grid" id="courses-grid">
+            <!-- JS로 렌더링 -->
+          </div>
+        </section>
+      </div>
+
+      <!-- 뷰 3: 공지사항 -->
+      <div id="view-notices" class="view-panel" hidden>
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <h2>e-class 공지사항</h2>
+              <p class="panel-desc">학사 및 강좌별 최신 공지를 확인할 수 있습니다.</p>
+            </div>
+          </div>
+          <div class="notice-list" id="notice-list">
+            <!-- JS로 렌더링 -->
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <!-- 과제 상세 모달 -->
+  <div class="modal-backdrop" id="detail-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" hidden>
+    <div class="modal-card">
+      <div class="modal-header">
+        <div>
+          <span class="modal-kicker" id="modal-course">웹프로그래밍 · 11주차</span>
+          <h3 id="modal-title">과제 상세 정보</h3>
+        </div>
+        <button type="button" class="icon-close-btn" id="close-modal-btn" aria-label="모달 닫기">×</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-desc" id="modal-desc"></p>
+        <table class="meta-table">
+          <tbody>
+            <tr>
+              <th>제출 상태</th>
+              <td id="modal-status"></td>
+            </tr>
+            <tr>
+              <th>마감일시</th>
+              <td id="modal-due"></td>
+            </tr>
+            <tr>
+              <th>배점 / 점수</th>
+              <td id="modal-score"></td>
+            </tr>
+            <tr>
+              <th>첨부 파일</th>
+              <td id="modal-file"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="modal-cancel-btn">닫기</button>
+        <button type="button" class="btn btn-primary" id="modal-submit-shortcut-btn">이 과제 제출하러 가기</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      <span>서울특별시 성북구 삼선교로 16길 116 한성대학교 e-class (데모 환경)</span>
+      <span>© 2026 Hansung University e-class Demo</span>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
