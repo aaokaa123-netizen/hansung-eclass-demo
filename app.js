@@ -11,7 +11,7 @@
       department: '컴퓨터공학부',
       credits: 3,
       schedule: '월 10:30~12:00 / 수 10:30~12:00 (공학관 302호)',
-      color: 'linear-gradient(135deg, #003876 0%, #0284c7 100%)'
+      color: '#003876'
     },
     {
       id: 'CSE304',
@@ -22,7 +22,7 @@
       department: '컴퓨터공학부',
       credits: 3,
       schedule: '화 13:30~15:00 / 목 13:30~15:00 (탐구관 405호)',
-      color: 'linear-gradient(135deg, #1d4ed8 0%, #7c3aed 100%)'
+      color: '#0052A4'
     },
     {
       id: 'CSE309',
@@ -33,7 +33,7 @@
       department: '컴퓨터공학부',
       credits: 3,
       schedule: '월 15:00~16:30 / 수 15:00~16:30 (상상관 501호)',
-      color: 'linear-gradient(135deg, #0e7490 0%, #2563eb 100%)'
+      color: '#0B6E99'
     },
     {
       id: 'CSE312',
@@ -44,7 +44,7 @@
       department: '컴퓨터공학부',
       credits: 3,
       schedule: '화 10:30~12:00 / 목 10:30~12:00 (공학관 205호)',
-      color: 'linear-gradient(135deg, #312e81 0%, #db2777 100%)'
+      color: '#1D4E89'
     }
   ];
 
@@ -158,11 +158,6 @@
   };
 
   const els = {
-    canvas: document.getElementById('particle-canvas'),
-    particleBurstBtn: document.getElementById('particle-burst-btn'),
-    particleToggleBtn: document.getElementById('particle-toggle-btn'),
-    particleCounter: document.getElementById('particle-counter'),
-
     navTabs: document.querySelectorAll('.nav-tab'),
     brandLink: document.querySelector('.brand-link'),
     sidebarCourseList: document.getElementById('sidebar-course-list'),
@@ -179,8 +174,6 @@
     statTotal: document.getElementById('stat-total'),
     statSubmitted: document.getElementById('stat-submitted'),
     statPending: document.getElementById('stat-pending'),
-    barSubmitted: document.getElementById('bar-submitted'),
-    barPending: document.getElementById('bar-pending'),
 
     registerSection: document.getElementById('register-section'),
     selectedCourseBadge: document.getElementById('selected-course-badge'),
@@ -218,324 +211,6 @@
     modalSubmitShortcutBtn: document.getElementById('modal-submit-shortcut-btn')
   };
 
-  /* =========================================================
-     멀티레이어 인터랙티브 파티클 캔버스 엔진
-     ========================================================= */
-  const particleFX = {
-    enabled: true,
-    burst: () => {},
-    errorBurst: () => {}
-  };
-
-  function initParticleEngine() {
-    const canvas = els.canvas;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    const COLORS = ['#00e5ff', '#38bdf8', '#60a5fa', '#a855f7', '#ec4899', '#e0f2fe'];
-    const ERROR_COLORS = ['#fb7185', '#f43f5e', '#fda4af', '#f97316'];
-
-    let width = window.innerWidth;
-    let height = window.innerHeight;
-    let dpr = Math.min(window.devicePixelRatio || 1, 2);
-
-    const pointer = { x: width * 0.5, y: height * 0.35, active: false };
-    const nodes = [];
-    const sparks = [];
-    const waves = [];
-
-    function resize() {
-      width = window.innerWidth;
-      height = window.innerHeight;
-      dpr = Math.min(window.devicePixelRatio || 1, 2);
-      canvas.width = Math.floor(width * dpr);
-      canvas.height = Math.floor(height * dpr);
-      canvas.style.width = `${width}px`;
-      canvas.style.height = `${height}px`;
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    }
-
-    function createNodes() {
-      nodes.length = 0;
-      const count = Math.max(75, Math.min(125, Math.floor((width * height) / 14500)));
-      for (let i = 0; i < count; i++) {
-        const depth = 0.4 + Math.random() * 1.1;
-        nodes.push({
-          x: Math.random() * width,
-          y: Math.random() * height,
-          vx: (Math.random() - 0.5) * 0.55 * depth,
-          vy: (Math.random() - 0.5) * 0.55 * depth,
-          radius: (1.1 + Math.random() * 2.1) * depth,
-          color: COLORS[i % COLORS.length],
-          phase: Math.random() * Math.PI * 2,
-          depth
-        });
-      }
-      if (els.particleCounter) {
-        els.particleCounter.textContent = `${nodes.length} nodes`;
-      }
-    }
-
-    function spawnBurst(x, y, count = 20, palette = COLORS, ringColor = '#38bdf8') {
-      if (!particleFX.enabled) return;
-      waves.push({
-        x,
-        y,
-        radius: 6,
-        maxRadius: count > 40 ? 220 : 110,
-        alpha: 0.78,
-        color: ringColor
-      });
-      for (let i = 0; i < count; i++) {
-        const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.35;
-        const speed = 1.4 + Math.random() * (count > 40 ? 6.5 : 4.2);
-        sparks.push({
-          x,
-          y,
-          vx: Math.cos(angle) * speed,
-          vy: Math.sin(angle) * speed,
-          radius: 1.4 + Math.random() * 2.5,
-          alpha: 1,
-          decay: 0.015 + Math.random() * 0.02,
-          color: palette[Math.floor(Math.random() * palette.length)]
-        });
-      }
-    }
-
-    particleFX.burst = (x = width * 0.5, y = height * 0.42) => {
-      spawnBurst(x, y, 56, COLORS, '#00e5ff');
-      setTimeout(() => spawnBurst(x - 110, y + 40, 28, COLORS, '#a855f7'), 120);
-      setTimeout(() => spawnBurst(x + 110, y - 35, 28, COLORS, '#ec4899'), 220);
-    };
-
-    particleFX.errorBurst = (x = width * 0.5, y = height * 0.5) => {
-      spawnBurst(x, y, 36, ERROR_COLORS, '#fb7185');
-    };
-
-    let lastTrailTime = 0;
-    window.addEventListener('pointermove', (e) => {
-      pointer.x = e.clientX;
-      pointer.y = e.clientY;
-      pointer.active = true;
-
-      const now = performance.now();
-      if (particleFX.enabled && now - lastTrailTime > 30) {
-        lastTrailTime = now;
-        sparks.push({
-          x: e.clientX + (Math.random() - 0.5) * 8,
-          y: e.clientY + (Math.random() - 0.5) * 8,
-          vx: (Math.random() - 0.5) * 0.9,
-          vy: (Math.random() - 0.5) * 0.9 - 0.3,
-          radius: 1.2 + Math.random() * 1.6,
-          alpha: 0.85,
-          decay: 0.028,
-          color: COLORS[Math.floor(Math.random() * COLORS.length)]
-        });
-      }
-    });
-
-    window.addEventListener('pointerleave', () => {
-      pointer.active = false;
-    });
-
-    window.addEventListener('click', (e) => {
-      spawnBurst(e.clientX, e.clientY, 16, COLORS, '#38bdf8');
-    });
-
-    window.addEventListener('resize', () => {
-      resize();
-      createNodes();
-    });
-
-    if (els.particleBurstBtn) {
-      els.particleBurstBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        particleFX.burst(window.innerWidth * 0.5, window.innerHeight * 0.36);
-      });
-    }
-
-    if (els.particleToggleBtn) {
-      els.particleToggleBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        particleFX.enabled = !particleFX.enabled;
-        els.particleToggleBtn.classList.toggle('is-on', particleFX.enabled);
-        els.particleToggleBtn.textContent = particleFX.enabled ? '파티클 ON' : '파티클 OFF';
-        if (!particleFX.enabled) {
-          ctx.clearRect(0, 0, width, height);
-        }
-      });
-    }
-
-    function renderFrame(time) {
-      requestAnimationFrame(renderFrame);
-      if (!particleFX.enabled) return;
-
-      ctx.clearRect(0, 0, width, height);
-
-      // 1. 파티클 위치 업데이트 + 별자리 연결선
-      const linkDist = 135;
-      const mouseDist = 185;
-
-      for (let i = 0; i < nodes.length; i++) {
-        const p = nodes[i];
-        p.x += p.vx;
-        p.y += p.vy;
-
-        if (p.x < -20) p.x = width + 20;
-        if (p.x > width + 20) p.x = -20;
-        if (p.y < -20) p.y = height + 20;
-        if (p.y > height + 20) p.y = -20;
-
-        if (pointer.active) {
-          const dx = pointer.x - p.x;
-          const dy = pointer.y - p.y;
-          const dist = Math.hypot(dx, dy);
-          if (dist < mouseDist && dist > 1) {
-            const force = (1 - dist / mouseDist) * 0.018;
-            p.vx += (dx / dist) * force;
-            p.vy += (dy / dist) * force;
-
-            // 마우스와 파티클 사이 네온 필라멘트
-            ctx.beginPath();
-            ctx.strokeStyle = `rgba(0, 229, 255, ${(1 - dist / mouseDist) * 0.48})`;
-            ctx.lineWidth = 1.1;
-            ctx.moveTo(p.x, p.y);
-            ctx.lineTo(pointer.x, pointer.y);
-            ctx.stroke();
-          }
-        }
-
-        // 속도 안정화
-        p.vx *= 0.994;
-        p.vy *= 0.994;
-        const speed = Math.hypot(p.vx, p.vy);
-        if (speed < 0.15) {
-          p.vx += (Math.random() - 0.5) * 0.06;
-          p.vy += (Math.random() - 0.5) * 0.06;
-        }
-      }
-
-      // 노드 간 별자리 연결
-      for (let i = 0; i < nodes.length; i++) {
-        const a = nodes[i];
-        for (let j = i + 1; j < nodes.length; j++) {
-          const b = nodes[j];
-          const dx = a.x - b.x;
-          const dy = a.y - b.y;
-          const distSq = dx * dx + dy * dy;
-          if (distSq < linkDist * linkDist) {
-            const alpha = (1 - Math.sqrt(distSq) / linkDist) * 0.24;
-            ctx.beginPath();
-            ctx.strokeStyle = `rgba(125, 211, 252, ${alpha})`;
-            ctx.lineWidth = 0.85;
-            ctx.moveTo(a.x, a.y);
-            ctx.lineTo(b.x, b.y);
-            ctx.stroke();
-          }
-        }
-      }
-
-      // 노드 렌더링 (트윙클링 + 글로우)
-      for (let i = 0; i < nodes.length; i++) {
-        const p = nodes[i];
-        const twinkle = 0.55 + 0.45 * Math.sin(time * 0.0025 + p.phase);
-        ctx.save();
-        ctx.globalAlpha = twinkle;
-        ctx.shadowBlur = 14;
-        ctx.shadowColor = p.color;
-        ctx.fillStyle = p.color;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-      }
-
-      // 2. 쇼크웨이브 링 렌더링
-      for (let i = waves.length - 1; i >= 0; i--) {
-        const w = waves[i];
-        w.radius += (w.maxRadius - w.radius) * 0.1 + 1.8;
-        w.alpha *= 0.91;
-        if (w.alpha < 0.02 || w.radius >= w.maxRadius) {
-          waves.splice(i, 1);
-          continue;
-        }
-        ctx.save();
-        ctx.globalAlpha = w.alpha;
-        ctx.strokeStyle = w.color;
-        ctx.shadowBlur = 16;
-        ctx.shadowColor = w.color;
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.arc(w.x, w.y, w.radius, 0, Math.PI * 2);
-        ctx.stroke();
-        ctx.restore();
-      }
-
-      // 3. 스파크 파티클 렌더링
-      for (let i = sparks.length - 1; i >= 0; i--) {
-        const s = sparks[i];
-        s.x += s.vx;
-        s.y += s.vy;
-        s.vx *= 0.96;
-        s.vy *= 0.96;
-        s.alpha -= s.decay;
-        if (s.alpha <= 0) {
-          sparks.splice(i, 1);
-          continue;
-        }
-        ctx.save();
-        ctx.globalAlpha = s.alpha;
-        ctx.shadowBlur = 12;
-        ctx.shadowColor = s.color;
-        ctx.fillStyle = s.color;
-        ctx.beginPath();
-        ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-      }
-
-      // 파티클 수 과다 방지
-      if (sparks.length > 260) {
-        sparks.splice(0, sparks.length - 260);
-      }
-    }
-
-    resize();
-    createNodes();
-    requestAnimationFrame(renderFrame);
-  }
-
-  /* =========================================================
-     마그네틱 스포트라이트 & 3D 틸트 카드 효과
-     ========================================================= */
-  function initVisualEffects() {
-    document.querySelectorAll('.spotlight-card').forEach((card) => {
-      card.addEventListener('pointermove', (e) => {
-        const rect = card.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        card.style.setProperty('--mx', `${x}px`);
-        card.style.setProperty('--my', `${y}px`);
-      });
-    });
-
-    document.querySelectorAll('.tilt-card').forEach((card) => {
-      card.addEventListener('pointermove', (e) => {
-        const rect = card.getBoundingClientRect();
-        const px = (e.clientX - rect.left) / rect.width - 0.5;
-        const py = (e.clientY - rect.top) / rect.height - 0.5;
-        card.style.transform = `perspective(700px) rotateX(${(-py * 8).toFixed(2)}deg) rotateY(${(px * 8).toFixed(2)}deg) translateY(-3px)`;
-      });
-      card.addEventListener('pointerleave', () => {
-        card.style.transform = '';
-      });
-    });
-  }
-
-  /* =========================================================
-     한성 e-class 핵심 상태 및 과제 로직
-     ========================================================= */
   function isLocalApiMode() {
     return (
       (window.location.protocol === 'http:' || window.location.protocol === 'https:') &&
@@ -673,20 +348,12 @@
     const courseScoped = state.assignments.filter(
       (item) => state.selectedCourseId === 'ALL' || item.courseId === state.selectedCourseId
     );
-    const totalCount = courseScoped.length;
     const submittedCount = courseScoped.filter((item) => item.status === '제출 완료').length;
     const pendingCount = courseScoped.filter((item) => item.status !== '제출 완료').length;
 
-    els.statTotal.textContent = String(totalCount);
+    els.statTotal.textContent = String(courseScoped.length);
     els.statSubmitted.textContent = String(submittedCount);
     els.statPending.textContent = String(pendingCount);
-
-    if (els.barSubmitted) {
-      els.barSubmitted.style.width = `${totalCount ? Math.round((submittedCount / totalCount) * 100) : 0}%`;
-    }
-    if (els.barPending) {
-      els.barPending.style.width = `${totalCount ? Math.round((pendingCount / totalCount) * 100) : 0}%`;
-    }
 
     const list = getFilteredAssignments();
     if (list.length === 0) {
@@ -717,7 +384,7 @@
             <td>${escapeHtml(item.dueDate)}</td>
             <td><span class="status-badge ${statusClass}">${escapeHtml(item.status)}</span></td>
             <td>
-              <button type="button" class="btn btn-glass btn-sm" data-action="${actionType}" data-id="${item.id}">
+              <button type="button" class="btn btn-secondary btn-sm" data-action="${actionType}" data-id="${item.id}">
                 ${actionLabel}
               </button>
             </td>
@@ -745,9 +412,8 @@
               <div><strong>과제 현황:</strong> 전체 ${count}건 / 미제출 ${pending}건</div>
             </div>
             <div class="course-card-footer">
-              <button type="button" class="btn btn-neon btn-sm" data-enter-course="${escapeHtml(course.id)}">
-                <span class="btn-glow-layer" aria-hidden="true"></span>
-                <span>강의실 과제 보기</span>
+              <button type="button" class="btn btn-primary btn-sm" data-enter-course="${escapeHtml(course.id)}">
+                강의실 과제 보기
               </button>
             </div>
           </article>
@@ -829,28 +495,12 @@
     els.successAlert.hidden = true;
     els.errorAlert.textContent = message;
     els.errorAlert.hidden = false;
-
-    const btnRect = els.submitBtn ? els.submitBtn.getBoundingClientRect() : null;
-    if (btnRect) {
-      particleFX.errorBurst(btnRect.left + btnRect.width * 0.5, btnRect.top + btnRect.height * 0.5);
-    } else {
-      particleFX.errorBurst();
-    }
   }
 
   function showSuccessAlert(message) {
     els.errorAlert.hidden = true;
     els.successAlert.textContent = message;
     els.successAlert.hidden = false;
-  }
-
-  function setSubmitButtonLabel(text) {
-    const labelSpan = els.submitBtn.querySelector('.submit-btn-text');
-    if (labelSpan) {
-      labelSpan.textContent = text;
-    } else {
-      els.submitBtn.textContent = text;
-    }
   }
 
   function openDetailModal(assignmentId) {
@@ -905,11 +555,11 @@
     }
 
     els.submitBtn.disabled = true;
-    setSubmitButtonLabel('등록 중...');
+    els.submitBtn.textContent = '등록 중...';
 
     // [INTENTIONAL BUG]
     // 서버 API(POST /api/assignments)는 필수 필드명으로 `title`을 검증하지만,
-    // 프론트엔드가 오타 필드명 `assignment_title`로 전송하여 과제 등록이 항상 실패합니다.
+    // 프론트엔드가 오타 필드명 `assignment_title`로 전송하여 과제 등록이 항상 실패(HTTP 500)합니다.
     const payload = {
       courseId,
       week,
@@ -962,10 +612,9 @@
       els.form.reset();
       els.selectedFileLabel.textContent = '지원 형식: PDF, HWP, DOCX, ZIP, TXT (최대 50MB)';
       showSuccessAlert(`"${result.data.title}" 과제가 정상적으로 등록되었습니다.`);
-      particleFX.burst();
     } finally {
       els.submitBtn.disabled = false;
-      setSubmitButtonLabel('과제 등록');
+      els.submitBtn.textContent = '과제 등록';
     }
   }
 
@@ -1068,8 +717,6 @@
     });
   }
 
-  initParticleEngine();
-  initVisualEffects();
   bindEvents();
   loadInitialData();
 })();
